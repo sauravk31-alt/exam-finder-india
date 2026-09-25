@@ -152,8 +152,15 @@
             background: var(--row-tint);
         }
 
+        th:nth-child(4) {
+            width: 160px;
+        }
+
         .deadline-cell {
-            white-space: nowrap;
+            max-width: 160px;
+            white-space: normal;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
         }
 
         .verified-note {
@@ -208,7 +215,7 @@
             </div>
             <div>
                 <label>State</label>
-                <select id="state"><option value="">Any</option></select>
+                <select id="state"><option value="All India">All India</option></select>
             </div>
             <button onclick="runSearch()">Search</button>
         </div>
@@ -328,7 +335,12 @@
                 const streamReq = (row.stream_requirement || "").trim();
                 if (streamReq !== "Any" && streamReq !== stream) return false;
             }
-            if (state) {
+            if (state === "All India") {
+                // Default view: national-scope exams only, not every state's
+                // specific exams mixed together unfiltered.
+                const eligible = (row.eligible_states || "").split(",").map(s => s.trim());
+                if (!eligible.includes("All India")) return false;
+            } else if (state) {
                 const eligible = (row.eligible_states || "").split(",").map(s => s.trim());
                 const isAllIndia = eligible.includes("All India");
                 const isDirectMatch = eligible.includes(state);
@@ -361,7 +373,7 @@
 
             const matches = examData.filter(row => matchesFilters(row, qualification, stream, state));
 
-            if (state) {
+            if (state && state !== "All India") {
                 matches.sort((a, b) => {
                     const aIsAllIndia = (a.eligible_states || "").includes("All India");
                     const bIsAllIndia = (b.eligible_states || "").includes("All India");
